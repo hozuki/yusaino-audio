@@ -15,6 +15,8 @@ import * as assert from "assert";
     const decData = Array.from(<any>decGen);
     console.log("Dec: ", decData);
     try {
+        const compressionRatio = encData.length / (testData.length * 8);
+        console.info(`Compression ratio: ${((compressionRatio * 10000) | 0) / 100}%`);
         assert.deepEqual(decData, testData, "Decode data does not equal to original test data.");
         console.info("Test OK.");
     } catch (err) {

@@ -21,9 +21,8 @@ gulp.task("build", () => {
         .src(["src/**/*.ts", "inc/**/*.d.ts"])
         .pipe(ts(tsConfig))
         .js
-        .pipe(gulp.dest("bin/es6"))
         .pipe(babel({
             presets: ["es2015"]
         }))
-        .pipe(gulp.dest('bin/es5'));
+        .pipe(gulp.dest("bin"));
 });

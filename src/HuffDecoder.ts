@@ -1,6 +1,7 @@
 export default class HuffDecoder {
 
     constructor(dictionary: number[]) {
+        //console.log(dictionary);
         this._huffDictionary = dictionary;
     }
 
@@ -30,6 +31,10 @@ export default class HuffDecoder {
                 }
             }
         }
+    }
+
+    get length(): number {
+        return this._huffDictionary.length;
     }
 
     private _huffDictionary: number[] = null;

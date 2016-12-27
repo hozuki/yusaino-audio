@@ -1,19 +1,23 @@
 import Heap from "./Heap";
 import {HuffCluster} from "./HuffCluster";
-import {xrange, select, enumerate} from "./iterable";
+import {select, enumerate, slice} from "./iterable";
 import BitArray from "./BitArray";
-import {HuffDictionary, default as HuffEncoder} from "./HuffEncoder";
+import {default as HuffEncoder, HuffEntry} from "./HuffEncoder";
 import HuffDecoder from "./HuffDecoder";
+import arrayComparison from "./arrayComparison";
 
 export default class HuffTree {
 
     constructor(histogram: number[][]) {
         const trees = histogram.slice();
-        Heap.heapify(trees);
+        // console.log("Original trees: ", trees.join(", "));
+        Heap.heapify(trees, arrayComparison);
+        // console.log("Heap: ", trees.join(", "));
         while (trees.length > 1) {
-            const [childRight, childLeft] = [Heap.pop(trees), Heap.pop(trees)];
+            const [childRight, childLeft] = [Heap.pop(trees, arrayComparison), Heap.pop(trees, arrayComparison)];
+            // console.log("Popped: ", childRight, childLeft);
             const parent = [childLeft[0] + childRight[0], childLeft, childRight];
-            Heap.push(trees, parent);
+            Heap.push(trees, parent, arrayComparison);
         }
         this._tree = trees[0];
     }
@@ -27,13 +31,19 @@ export default class HuffTree {
     }
 
     getEncoder(): HuffEncoder {
-        return new HuffEncoder(HuffTree.getDictionary(this.tree));
+        // const dictIter = HuffTree.getDictionary(this.tree);
+        // for (const i of dictIter) {
+        //     console.log("dict entry: ", i[0], i[1].toString());
+        // }
+        const iter2 = HuffTree.getDictionary(this.tree);
+        return new HuffEncoder(iter2);
     }
 
     static flatten(tree: HuffCluster): number[] {
         console.assert(tree.length > 2);
+        // console.log("huffTree: ", tree);
         let l: number[] = [];
-        for (let h of select(tree, xrange(1, 3))) {
+        for (const h of select(tree, slice([1, 3]))) {
             if (h.length === 2) {
                 l.push(0);
                 l.push(h[1]);
@@ -46,12 +56,13 @@ export default class HuffTree {
         return l;
     }
 
-    static *getDictionary(tree: HuffCluster, bits: BitArray = new BitArray()): HuffDictionary {
+    static *getDictionary(tree: HuffCluster, bits: BitArray = new BitArray()): Iterable<HuffEntry[]> {
+        // console.log("trying to get tree of: ", tree, " with bits: ", bits.toString());
         if (tree.length === 2) {
             yield [tree[1], bits];
         } else {
-            for (let {index, value: h} of enumerate(select(tree, xrange(1, 3)))) {
-                for (let y of HuffTree.getDictionary(h, bits.concat([index]))) {
+            for (const {index, value: h} of enumerate(select(tree, slice([1, 3])))) {
+                for (const y of HuffTree.getDictionary(h, bits.concat([index]))) {
                     yield y;
                 }
             }

@@ -2,7 +2,7 @@
   "name": "yusaino-audio",
   "version": "1.0.0",
   "description": "Audio processing for Yusaino.",
-  "main": "bin/es5/test.js",
+  "main": "bin/cli.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hozuki/yusaino-audio.git"
+    "url": "https://github.com/hozuki/yusaino-audio.git"
   },
   "keywords": [
     "audio",
@@ -25,17 +25,15 @@
   },
   "homepage": "https://github.com/hozuki/yusaino-audio#readme",
   "dependencies": {
+    "babel-polyfill": "^6.20.0",
+    "babel-preset-es2015": "^6.18.0",
     "commander": "^2.9.0",
     "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
     "gulp-sourcemaps": "^1.9.1",
     "gulp-typescript": "^3.1.3",
     "is-valid-path": "^0.1.1",
     "typescript": "^2.1.4",
     "wav": "^1.0.1"
-  },
-  "devDependencies": {
-    "babel-polyfill": "^6.20.0",
-    "babel-preset-es2015": "^6.18.0",
-    "gulp-babel": "^6.1.2"
   }
 }

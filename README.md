@@ -61,7 +61,7 @@ in Chinese):
 >
 > ---
 >
-> She is introduced on July 17, 2013, when a new region *Okinawa* is opened.
+> She was introduced on July 17, 2013, when a new region *Okinawa* opened.
 >
 > As a loli idol aged 11, her figure data is still below that of an average 9-year-old Japanese girl.
 > She is one of the smallest characters in the whole game.

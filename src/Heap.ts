@@ -109,7 +109,7 @@ function defaultComparison(a: any, b: any): number {
         if (!aIsArray) {
             return a > b ? 1 : (a < b ? -1 : 0);
         } else {
-            const len1 = a.dictionaryLength, len2 = b.dictionaryLength;
+            const len1 = a.length, len2 = b.length;
             const len = Math.min(len1, len2);
             for (let i = 0; i < len; ++i) {
                 const r = defaultComparison(a[i], b[i]);

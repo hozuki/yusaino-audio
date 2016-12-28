@@ -126,14 +126,10 @@ export function *imap(func?: (x: Iterable<any>) => any, ...its: Iterable<any>[])
     }
 }
 
-export function *chain(...iterables: (Iterable<any>|number)[]): Iterable<any> {
+export function *chain(...iterables: Iterable<any>[]): Iterable<any> {
     for (const it of iterables) {
-        if (typeof it === "number") {
-            yield it;
-        } else {
-            for (const elem of it) {
-                yield elem;
-            }
+        for (const elem of it) {
+            yield elem;
         }
     }
 }

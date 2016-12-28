@@ -41,7 +41,7 @@ export default class HuffTree {
         console.assert(tree.length > 2);
         let l: number[] = [];
         for (const h of select(tree, slice([1, 3]))) {
-            if (h.dictionaryLength === 2) {
+            if (h.length === 2) {
                 l.push(0);
                 l.push(h[1]);
             } else {

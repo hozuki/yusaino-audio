@@ -57,7 +57,7 @@ export default class HuffDecoder {
      * Gets the length of the dictionary used.
      * @returns {number} Length of the dictionary used.
      */
-    get dictionaryLength(): number {
+    get length(): number {
         return this.dictionary.length;
     }
 

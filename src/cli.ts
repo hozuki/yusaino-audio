@@ -60,7 +60,7 @@ function parseArgs(): Options {
         .parse(process.argv);
     const options: Options = {
         bits: Number.parseInt((<any>command)["bits"]),
-        cpp: String((<any>command)["cpp"]),
+        cpp: (<any>command)["cpp"] ? String((<any>command)["cpp"]) : void(0),
         wav: command.args[0],
     };
     if ([7, 8, 9].indexOf(options.bits) < 0) {
@@ -82,7 +82,7 @@ function checkArgs(options: Options): void {
             failed = true;
             break;
         }
-        if (options.cpp && !isValidPath(options.cpp)) {
+        if (!options.cpp || !isValidPath(options.cpp)) {
             options.cpp = null;
         }
     } while (false);
@@ -93,18 +93,17 @@ function checkArgs(options: Options): void {
 
 function processAudio(uint8Audio: number[], format: WavFormat, options: Options): void {
     // Unsigned to signed
-    const audio = uint8Audio.slice();
-    for (let i = 0; i < uint8Audio.length; ++i) {
-        audio[i] -= 128;
-    }
+    const audio = uint8Audio.map(x => x - 128);
     // Calculate the difference. Incremental encoding is a good idea, which narrows down the possible value range,
     // leading to a smaller Huffman tree and a shorter encoded form.
-    const sint8Audio: number[] = Array.from(chain(audio[0], imap(x => x[1] - x[0], izip(select(audio, slice([, -1])), select(audio, slice([1,]))))));
     // Equals to:
+    // ```
     // sint8Audio[0] = audio[0];
     // for (let i = 1; i < audio.length - 1; ++i) {
     //     sint8Audio[i] = audio[i + 1] - audio[i];
     // }
+    // ```
+    const sint8Audio: number[] = Array.from(chain([audio[0]], imap(x => x[1] - x[0], izip(select(audio, slice([, -1])), select(audio, slice([1,]))))));
 
     // Build the Huffman tree.
     const hist = histogram(sint8Audio);
@@ -117,10 +116,13 @@ function processAudio(uint8Audio: number[], format: WavFormat, options: Options)
     const compressionRatio = ((encodedBits / originalBits * 10000) | 0) / 10000;
     console.info(`Original bits: ${originalBits}, Encoded bits: ${encodedBits}, Compression ratio: ${compressionRatio * 100}%`);
     const decoder = huffTree.getDecoder();
-    console.info(`Decoder length: ${decoder.dictionaryLength} word(s)`);
+    console.info(`Decoder length: ${decoder.length} word(s)`);
 
     // Generate files.
     (() => {
+        if (!options.cpp) {
+            return;
+        }
         try {
             const stat = fs.lstatSync(options.cpp);
             if (stat.isDirectory()) {
@@ -144,7 +146,7 @@ extern const uint8_t SoundData[] PROGMEM;`);
         const fd = fs.openSync(cppFileName, "w");
         fs.writeSync(fd, `const int SampleRate = ${format.sampleRate};\n`);
         fs.writeSync(fd, `const int SampleBits = 8;\n\n`);
-        fs.writeSync(fd, `const signed int HuffDict[${decoder.dictionaryLength}] = {\n${arrayFormatter(decoder.dictionary)}\n};\n\n`);
+        fs.writeSync(fd, `const signed int HuffDict[${decoder.length}] = {\n${arrayFormatter(decoder.dictionary)}\n};\n\n`);
         fs.writeSync(fd, `const unsigned long SoundDataBits = ${encodedBitArray.length}UL;\n`);
         fs.writeSync(fd, `const uint8_t SoundData[${encodedBitArray.data.length}] PROGMEM = {\n${arrayFormatter(encodedBitArray.data)}\n};\n`);
         fs.closeSync(fd);

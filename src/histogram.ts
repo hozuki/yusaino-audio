@@ -1,3 +1,10 @@
+/**
+ * Gets the frequency histogram of a number sequence.
+ * @param sequence {ArrayLike<number>} The number sequence.
+ * @param [normalize] {boolean} Whether normalize the frequency or not.
+ * @returns {number[][]} The histogram in an array of [frequency, value]. If the histogram is normalized, frequency
+ * will be the ratio of corresponding element appearance, rather than the rate of appearance.
+ */
 export default function histogram(sequence: ArrayLike<number>, normalize: boolean = false): number[][] {
     // Value, Frequency
     const dict = new Map<number, number>();

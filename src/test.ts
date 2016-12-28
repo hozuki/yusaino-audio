@@ -12,7 +12,7 @@ import * as assert from "assert";
     const decGen = decoder.decode(encData);
     console.log("Test data: ", testData);
     console.log("Enc: ", "[" + Array.from(encData).join(", ") + "]");
-    const decData = Array.from(<any>decGen);
+    const decData = Array.from(decGen);
     console.log("Dec: ", decData);
     try {
         const compressionRatio = encData.length / (testData.length * 8);

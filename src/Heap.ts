@@ -4,14 +4,13 @@ type Comparison = (x: any, y: any) => number;
 
 // Mostly https://github.com/qiao/heap.js
 // https://svn.python.org/projects/python/tags/r32/Lib/heapq.py
+/**
+ * I guess no documentation is need for this class. :)
+ */
 abstract class Heap {
 
-    // JavaScript array comparison: for each element
-    // e.g.: [1, 3, 4] > [1, 2, 4] (true)
-    //       [3, 4, 5] > [1, 8, 9] (true)
-    //       [1, 2] > [1, 2] (false)
     static heapify(list: any[], comparison: Comparison = defaultComparison): void {
-        for (const i of reversed(xrange((list.length / 2) | 0))) {
+        for (const i of reversed(xrange(div(list.length, 2)))) {
             Heap.__shiftUp(list, i, comparison);
         }
     }
@@ -69,20 +68,14 @@ abstract class Heap {
         const startPosition = position;
         const newItem = list[position];
         let childPosition = position * 2 + 1;
-        // console.log("childpos(invoke): ", childPosition);
         while (childPosition < endPosition) {
             const rightPosition = childPosition + 1;
-            // if (rightPosition < endPosition) {
-            //     console.log(`[${childPosition} ${rightPosition}] = `, list[childPosition], list[rightPosition]);
-            // }
             if (rightPosition < endPosition && !(comparison(list[childPosition], list[rightPosition]) < 0)) {
-                // console.log(`exception: [${childPosition} ${rightPosition}] = `, list[childPosition], list[rightPosition]);
                 childPosition = rightPosition;
             }
             list[position] = list[childPosition];
             position = childPosition;
             childPosition = position * 2 + 1;
-            // console.log("childpos: ", childPosition);
         }
         list[position] = newItem;
         Heap.__shiftDown(list, startPosition, position, comparison);
@@ -90,8 +83,47 @@ abstract class Heap {
 
 }
 
-function defaultComparison(x: any, y: any): number {
-    return x > y ? 1 : (x < y ? -1 : 0);
+/**
+ * Python-flavored array comparison.
+ *
+ * By default, JavaScript compare two arrays based on their object address in memory (I guess). You will see such
+ * results:
+ * [1] > [1]: false; [1] < [1]: false; [1] == [1]: false;
+ *
+ * Python consider arrays as lists. The comparison follow this rule:
+ * 1. If both element are numbers, compare them by arithmetic comparison (subtraction);
+ * 2. If one of the element is an array, and the other is a number, the array element is "longer" and "larger";
+ * 3. If both elements are arrays, compare them element by element;
+ * 4. If both elements are arrays and they seem equal compared by rule #3, but then one array ends and the other stands,
+ * the longer one is larger.
+ *
+ * @param a
+ * @param b
+ * @returns {number}
+ */
+function defaultComparison(a: any, b: any): number {
+    const aIsArray = Array.isArray(a), bIsArray = Array.isArray(b);
+    if (aIsArray !== bIsArray) {
+        return aIsArray ? 1 : -1;
+    } else {
+        if (!aIsArray) {
+            return a > b ? 1 : (a < b ? -1 : 0);
+        } else {
+            const len1 = a.dictionaryLength, len2 = b.dictionaryLength;
+            const len = Math.min(len1, len2);
+            for (let i = 0; i < len; ++i) {
+                const r = defaultComparison(a[i], b[i]);
+                if (r !== 0) {
+                    return r;
+                }
+            }
+            return len1 > len2 ? 1 : (len1 < len2 ? -1 : 0);
+        }
+    }
+}
+
+function div(numerator: number, denominator: number): number {
+    return (numerator / denominator) | 0;
 }
 
 export default Heap;

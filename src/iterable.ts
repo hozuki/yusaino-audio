@@ -31,9 +31,9 @@ function xrange2(start: number, stop: number, step: number = 1): Iterable<number
 }
 
 // See Python documentation: https://docs.python.org/2/library/functions.html#xrange
-function xrange(stop: number): Iterable<number>;
-function xrange(start: number, stop: number, step?: number): Iterable<number>;
-function xrange(r1: number, r2?: number, r3?: number): Iterable<number> {
+export function xrange(stop: number): Iterable<number>;
+export function xrange(start: number, stop: number, step?: number): Iterable<number>;
+export function xrange(r1: number, r2?: number, r3?: number): Iterable<number> {
     if (arguments.length === 1) {
         return xrange1(r1);
     }
@@ -43,8 +43,9 @@ function xrange(r1: number, r2?: number, r3?: number): Iterable<number> {
     throw new TypeError();
 }
 
-function select(obj: ArrayLike<any>, slice: Slice, thisSelector?: (thiz: ArrayLike<any>|any) => ArrayLike<any>): Iterable<any>;
-function *select<T>(obj: ArrayLike<T>, slice: Slice, thisSelector: (thiz: ArrayLike<T>|any) => ArrayLike<T> = null): Iterable<T> {
+// The mimic of Python accessing-by-slice grammar.
+export function select(obj: ArrayLike<any>, slice: Slice, thisSelector?: (thiz: ArrayLike<any>|any) => ArrayLike<any>): Iterable<any>;
+export function *select<T>(obj: ArrayLike<T>, slice: Slice, thisSelector: (thiz: ArrayLike<T>|any) => ArrayLike<T> = null): Iterable<T> {
     const thiz = typeof thisSelector === "function" ? thisSelector(obj) : obj;
     const start = slice.start;
     const stop = slice.stop > 0 ? slice.stop : thiz.length + slice.stop;
@@ -62,7 +63,7 @@ function *select<T>(obj: ArrayLike<T>, slice: Slice, thisSelector: (thiz: ArrayL
     }
 }
 
-function *enumerate<T>(list: Iterable<T>): Iterable<{index: number, value: T}> {
+export function *enumerate<T>(list: Iterable<T>): Iterable<{index: number, value: T}> {
     let current = 0;
     for (const v of list) {
         yield {index: current, value: v};
@@ -70,7 +71,7 @@ function *enumerate<T>(list: Iterable<T>): Iterable<{index: number, value: T}> {
     }
 }
 
-function *reversed<T>(list: Iterable<T>): Iterable<T> {
+export function *reversed<T>(list: Iterable<T>): Iterable<T> {
     const buffer: T[] = [];
     for (const item of list) {
         buffer.push(item);
@@ -80,19 +81,26 @@ function *reversed<T>(list: Iterable<T>): Iterable<T> {
     }
 }
 
-function *izip<T1, T2>(it1: Iterable<T1>, it2: Iterable<T2>): Iterable<(T1|T2)[]> {
-    const i1: Iterator<T1> = it1[Symbol.iterator](), i2: Iterator<T2> = it2[Symbol.iterator]();
-    let v1 = i1.next(), v2 = i2.next();
-    while (!v1.done && !v2.done) {
-        const t1 = v1.value;
-        const t2 = v2.value;
-        yield [t1, t2];
+export function *izip<T1, T2>(it1: Iterable<T1>|Iterator<T1>, it2: Iterable<T2>|Iterator<T2>): Iterable<(T1|T2)[]> {
+    const i1: Iterator<T1> = it1[Symbol.iterator] ? it1[Symbol.iterator]() : it1;
+    const i2: Iterator<T2> = it2[Symbol.iterator] ? it2[Symbol.iterator]() : it2;
+    let v1: IteratorResult<T1>;
+    let v2: IteratorResult<T2>;
+    while (true) {
         v1 = i1.next();
+        if (v1.done) {
+            break;
+        }
+        // TODO: Potential bug when len(it2) < len(it1), where it1 is iterated one time more than it2 and it1 cannot go back.
         v2 = i2.next();
+        if (v2.done) {
+            break;
+        }
+        yield [v1.value, v2.value];
     }
 }
 
-function *imap(func?: (x: Iterable<any>) => any, ...its: Iterable<any>[]): Iterable<any> {
+export function *imap(func?: (x: Iterable<any>) => any, ...its: Iterable<any>[]): Iterable<any> {
     const argsLength = its.length;
     if (argsLength === 0) {
         return;
@@ -118,7 +126,7 @@ function *imap(func?: (x: Iterable<any>) => any, ...its: Iterable<any>[]): Itera
     }
 }
 
-function *chain(...iterables: (Iterable<any>|number)[]): Iterable<any> {
+export function *chain(...iterables: (Iterable<any>|number)[]): Iterable<any> {
     for (const it of iterables) {
         if (typeof it === "number") {
             yield it;
@@ -130,22 +138,20 @@ function *chain(...iterables: (Iterable<any>|number)[]): Iterable<any> {
     }
 }
 
-function slice(slice: number[]): Slice;
-function slice(start?: number, stop?: number, step?: number): Slice;
-function slice(start?: any, stop?: any, step?: any): Slice {
+export function slice(slice: number[]): Slice;
+export function slice(start?: number, stop?: number, step?: number): Slice;
+export function slice(start?: any, stop?: any, step?: any): Slice {
     if (Array.isArray(start)) {
         return sliceInternal(start[0], start[1], start[2]);
     } else {
         return sliceInternal(start, stop, step);
     }
-}
 
-function sliceInternal(start: number = 0, stop: number = -1, step: number = 1): Slice {
-    return {
-        start: start,
-        stop: stop,
-        step: step
-    };
+    function sliceInternal(start: number = 0, stop: number = -1, step: number = 1): Slice {
+        return {
+            start: start,
+            stop: stop,
+            step: step
+        };
+    }
 }
-
-export {xrange, select, enumerate, reversed, izip, imap, chain, slice};

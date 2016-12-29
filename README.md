@@ -4,7 +4,7 @@ A migration of Thomas Grill's [audio compression solution for Arduino](http://gr
 from Python 2 to JavaScript.
 
 This repository contains the audio encoding and decoding (on computer) part. For hardware playback,
-please see [Yusaino](later-XD). By re-coding, I am able to understand the whole design.
+please see [Yusaino](https://github.com/hozuki/Yusaino). By re-coding, I am able to understand the whole design.
 
 The main reason of choosing JavaScript is I don't know Python well. After the immigration, I felt
 strong attractions from both Python and JavaScript, and their resemblance deep within. Thomas heavily

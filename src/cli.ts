@@ -136,18 +136,24 @@ function processAudio(uint8Audio: number[], format: WavFormat, options: Options)
 
         console.info(`Writing to '${path.resolve(headerFileName)}' and '${path.resolve(cppFileName)}'...`);
         fs.writeFileSync(headerFileName, `
-extern const int SampleRate;
-extern const int SampleBits;
+#ifndef __ARDUINO_SOUND_DATA__
+#define __ARDUINO_SOUND_DATA__
 
-extern const signed int HuffDict[];
-extern const unsigned long SoundDataBits;
-extern const uint8_t SoundData[] PROGMEM;`);
+extern const uint_fast32_t SampleRate;
+extern const int_fast8_t SampleBits;
+
+extern int_fast16_t const HuffDict[];
+extern uint_fast32_t const SoundDataBits;
+extern uint8_t const SoundData[];
+
+#endif
+`);
 
         const fd = fs.openSync(cppFileName, "w");
-        fs.writeSync(fd, `const int SampleRate = ${format.sampleRate};\n`);
-        fs.writeSync(fd, `const int SampleBits = 8;\n\n`);
-        fs.writeSync(fd, `const signed int HuffDict[${decoder.length}] = {\n${arrayFormatter(decoder.dictionary)}\n};\n\n`);
-        fs.writeSync(fd, `const unsigned long SoundDataBits = ${encodedBitArray.length}UL;\n`);
+        fs.writeSync(fd, `const uint_fast32_t SampleRate = ${format.sampleRate};\n`);
+        fs.writeSync(fd, `const int_fast8_t SampleBits = 8;\n\n`);
+        fs.writeSync(fd, `const int_fast16_t HuffDict[${decoder.length}] = {\n${arrayFormatter(decoder.dictionary)}\n};\n\n`);
+        fs.writeSync(fd, `const uint_fast32_t SoundDataBits = ${encodedBitArray.length}UL;\n`);
         fs.writeSync(fd, `const uint8_t SoundData[${encodedBitArray.data.length}] PROGMEM = {\n${arrayFormatter(encodedBitArray.data)}\n};\n`);
         fs.closeSync(fd);
     })();

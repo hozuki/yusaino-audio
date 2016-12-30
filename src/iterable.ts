@@ -44,12 +44,16 @@ export function xrange(r1: number, r2?: number, r3?: number): Iterable<number> {
 }
 
 // The mimic of Python accessing-by-slice grammar.
+export function select(obj: ArrayLike<any>, slice: number[], thisSelector?: (thiz: ArrayLike<any>|any) => ArrayLike<any>): Iterable<any>;
+export function select<T>(obj: ArrayLike<T>, slice: number[], thisSelector?: (thiz: ArrayLike<T>|T) => ArrayLike<T>): Iterable<T>;
 export function select(obj: ArrayLike<any>, slice: Slice, thisSelector?: (thiz: ArrayLike<any>|any) => ArrayLike<any>): Iterable<any>;
-export function *select<T>(obj: ArrayLike<T>, slice: Slice, thisSelector: (thiz: ArrayLike<T>|any) => ArrayLike<T> = null): Iterable<T> {
+export function select<T>(obj: ArrayLike<T>, slice: Slice, thisSelector?: (thiz: ArrayLike<T>|any) => ArrayLike<T>): Iterable<T>;
+export function *select<T>(obj: ArrayLike<T>, s: any, thisSelector: (thiz: ArrayLike<T>|any) => ArrayLike<T> = null): Iterable<T> {
     const thiz = typeof thisSelector === "function" ? thisSelector(obj) : obj;
-    const start = slice.start;
-    const stop = slice.stop > 0 ? slice.stop : thiz.length + slice.stop;
-    const step = slice.step;
+    const sliceObject = <Slice>(Array.isArray(s) ? slice(s) : s);
+    const start = sliceObject.start;
+    const stop = sliceObject.stop > 0 ? sliceObject.stop : thiz.length + sliceObject.stop;
+    const step = sliceObject.step;
     if (step > 0) {
         for (let i = start; i < stop; i += step) {
             yield thiz[i];

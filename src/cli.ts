@@ -7,7 +7,7 @@ import * as commander from "commander";
 import "babel-polyfill";
 import histogram from "./histogram";
 import HuffTree from "./HuffTree";
-import {chain, imap, izip, select, slice, xrange} from "./iterable";
+import {chain, imap, izip, select, xrange} from "./iterable";
 const pkg = require("../package.json");
 const isValidPath = require("is-valid-path");
 
@@ -103,7 +103,7 @@ function processAudio(uint8Audio: number[], format: WavFormat, options: Options)
     //     sint8Audio[i] = audio[i + 1] - audio[i];
     // }
     // ```
-    const sint8Audio: number[] = Array.from(chain([audio[0]], imap(x => x[1] - x[0], izip(select(audio, slice([, -1])), select(audio, slice([1,]))))));
+    const sint8Audio: number[] = Array.from(chain([audio[0]], imap(x => x[1] - x[0], izip(select(audio, [, -1]), select(audio, [1,])))));
 
     // Build the Huffman tree.
     const hist = histogram(sint8Audio);

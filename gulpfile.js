@@ -16,13 +16,13 @@ const tsConfig = {
 
 gulp.task("default", ["build"]);
 
-gulp.task("build", () => {
-    return gulp
+gulp.task("build", () =>
+    gulp
         .src(["src/**/*.ts", "inc/**/*.d.ts"])
         .pipe(ts(tsConfig))
         .js
         .pipe(babel({
             presets: ["es2015"]
         }))
-        .pipe(gulp.dest("bin"));
-});
+        .pipe(gulp.dest("bin"))
+);

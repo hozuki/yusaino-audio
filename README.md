@@ -16,7 +16,7 @@ dsound8 = map(int,chain((sound8[0],),imap(lambda x: x[1]-x[0],izip(sound8[:-1],s
 ```
 
 ```javascript
-const sint8Audio = Array.from(chain([audio[0]], imap(x => x[1] - x[0], izip(select(audio, slice([, -1])), select(audio, slice([1,]))))));
+const sint8Audio = Array.from(chain([audio[0]], imap(x => x[1] - x[0], izip(select(audio, [, -1]), select(audio, [1,])))));
 ```
 
 Yeah, I wrote `chain`, `imap`, `izip`, `select`, and `slice` myself. It's a good practice.
@@ -32,8 +32,17 @@ It is pure JavaScript so running on all platforms is not a dream. Damn you [scik
 
 ## Usage
 
+Build the project:
+
 ```shell
-yusaino-audio [options] <wav-file>
+npm install
+npm run build
+```
+
+And run the CLI script:
+
+```shell
+node bin/cli [options] <wav-file>
 ```
 
 Options:

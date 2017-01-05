@@ -9,6 +9,8 @@ const isValidPath = require("is-valid-path");
 interface Options {
     wav?: string;
     cpp?: string;
+    verbose?: boolean;
+    test?: boolean;
 }
 
 main();
@@ -22,11 +24,16 @@ function main(): void {
     console.info(`Encoding '${path.resolve(options.wav)}'...`);
     const file = fs.createReadStream(options.wav);
     const codifier = new Codifier();
+    codifier.debug = options.verbose;
+    codifier.test = options.test;
     codifier
         .process(file)
         .then((): void => {
             writeToFile(codifier, options);
             console.log("Done.");
+        })
+        .catch((ex: Error): void => {
+            console.error(ex);
         });
 }
 
@@ -36,10 +43,15 @@ function parseArgs(): Options {
         .version(pkg.version)
         .arguments("<wav-file>")
         .option("-o, --cpp <file>", "C/C++ program source code output")
+        .option("-v, --verbose", "Enable verbose mode")
+        .option("-t, --test", "Perform decoding test")
         .parse(process.argv);
+    const c = <any>command;
     return {
-        cpp: (<any>command)["cpp"] ? String((<any>command)["cpp"]) : void(0),
+        cpp: c.cpp ? String(c.cpp) : void(0),
         wav: command.args[0],
+        verbose: Boolean(c.verbose),
+        test: Boolean(c.test)
     };
 }
 
@@ -85,5 +97,4 @@ function writeToFile(codifier: Codifier, options: Options): void {
     console.info(`Writing to '${path.resolve(headerFileName)}' and '${path.resolve(cppFileName)}'...`);
     fs.writeFileSync(headerFileName, codifier.cppHeader);
     fs.writeFileSync(cppFileName, codifier.cppSource);
-    console.info("All written.");
 }

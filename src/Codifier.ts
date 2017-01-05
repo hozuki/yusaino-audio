@@ -25,11 +25,13 @@ export default class Codifier {
         return new Promise<void>((resolve, reject): void => {
             reader
                 .on("format", (format): void => {
-                    const formatInfoMessage = `Endian: ${format.endianness}\n`
-                        + (format.signed ? "Signed\n" : "Unsigned\n")
-                        + `Bit depth: ${format.bitDepth}\n`
-                        + `Channels: ${format.channels}`;
-                    console.info(formatInfoMessage);
+                    if (this.debug) {
+                        const formatInfoMessage = `Endian: ${format.endianness}\n`
+                            + (format.signed ? "Signed\n" : "Unsigned\n")
+                            + `Bit depth: ${format.bitDepth}\n`
+                            + `Channels: ${format.channels}`;
+                        console.info(formatInfoMessage);
+                    }
                     if (!(supportedBitDepth.indexOf(format.bitDepth) >= 0 && format.channels === 1)) {
                         const requirementFailedMessage =
                             `The encoder requires a wave audio file with attributes: mono (1 channel), ${supportedBitDepth.join(",")} bits.\n`
@@ -76,6 +78,9 @@ export default class Codifier {
     get format(): WavFormat {
         return this._format;
     }
+
+    debug: boolean = false;
+    test: boolean = true;
 
     private __transformAudio(): void {
         const format = this.format;
@@ -200,15 +205,18 @@ export default class Codifier {
         const encoder = huffTree.getEncoder();
         const encodedBitArray = encoder.encode(data);
 
-        // Show info.
-        const originalBits = data.length * format.bitDepth, encodedBits = encodedBitArray.length;
-        const compressionRatio = ((encodedBits / originalBits * 10000) | 0) / 10000;
-        const compressionInfo = `Original bits: ${originalBits} [${round(originalBits / 8, 2)} byte(s)]\n`
-            + `Encoded bits: ${encodedBits} [${round(encodedBits / 8, 2)} byte(s)]\n`
-            + `Compression ratio: ${compressionRatio * 100}%`;
-        console.info(compressionInfo);
         const decoder = huffTree.getDecoder();
-        console.info(`Decoder length: ${decoder.length} word(s)`);
+
+        // Show info.
+        if (this.debug) {
+            const originalBits = data.length * format.bitDepth, encodedBits = encodedBitArray.length;
+            const compressionRatio = ((encodedBits / originalBits * 10000) | 0) / 10000;
+            const compressionInfo = `Original bits: ${originalBits} [${round(originalBits / 8, 2)} byte(s)]\n`
+                + `Encoded bits: ${encodedBits} [${round(encodedBits / 8, 2)} byte(s)]\n`
+                + `Compression ratio: ${compressionRatio * 100}%`;
+            console.info(compressionInfo);
+            console.info(`Decoder length: ${decoder.length} word(s)`);
+        }
 
         // Generate source code strings.
         this._cppHeader = `
@@ -235,12 +243,14 @@ extern uint_fast8_t const SoundData[];
         this._cppSource = cppSource;
 
         // Test
-        const decodedData = Array.from(decoder.decode(encodedBitArray));
-        try {
-            assert.deepEqual(decodedData, data);
-            console.info("Decoding test successful.")
-        } catch (e) {
-            console.error("Decoding test failed: " + e.message);
+        if (this.test) {
+            const decodedData = Array.from(decoder.decode(encodedBitArray));
+            try {
+                assert.deepEqual(decodedData, data);
+                console.info("Decoding test successful.")
+            } catch (e) {
+                console.error("Decoding test failed: " + e.message);
+            }
         }
     }
 

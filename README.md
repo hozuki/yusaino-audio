@@ -47,9 +47,11 @@ node bin/cli [options] <wav-file>
 
 Options:
 
-    -h, --help         output usage information
-    -V, --version      output the version number
-    -o, --cpp <file>   C/C++ program source code output
+    -h, --help        output usage information
+    -V, --version     output the version number
+    -o, --cpp <file>  C/C++ program source code output
+    -v, --verbose     Enable verbose mode
+    -t, --test        Perform decoding test
 
 The script needs a wave audio file, with these attributes:
 

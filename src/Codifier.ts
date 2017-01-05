@@ -65,6 +65,10 @@ export default class Codifier {
         return this._data;
     }
 
+    get differentialData(): number[] {
+        return this._differentialData;
+    }
+
     get reader(): Reader {
         return this._reader;
     }
@@ -79,7 +83,7 @@ export default class Codifier {
 
         // If the original audio is 8-bit, the transformation is simple.
         if (byteDepth === 1) {
-            this._data = this.__transformAudio8();
+            this._differentialData = this.__transformAudio8();
             return;
         }
 
@@ -123,6 +127,28 @@ export default class Codifier {
             originalValueBuffer.push(value);
         }
 
+        // Constrain the audio samples to half of 16-bit, so that their differential will fall into 16-bit range.
+        // Scale them if needed.
+        let peakMax: number, peakMin: number, center: number, sampleRangeMax: number;
+        if (format.signed) {
+            peakMax = 16383;
+            peakMin = -16384;
+            center = 0;
+            sampleRangeMax = (1 << (format.bitDepth - 1)) - 1;
+        } else {
+            peakMax = 32767;
+            peakMin = 0;
+            center = 16384;
+            sampleRangeMax = (1 << format.bitDepth) - 1;
+        }
+        if (originalValueBuffer.some(v => v > peakMax || v < peakMin)) {
+            const scale = peakMax / sampleRangeMax;
+            for (let i = 0; i < originalValueBuffer.length; ++i) {
+                const v = Math.round(((originalValueBuffer[i] - center) * scale) + center);
+                originalValueBuffer[i] = Math.min(peakMax, Math.max(v, peakMin));
+            }
+        }
+
         // Calculate the differential. Incremental encoding is a good idea, which narrows down the possible value range,
         // leading to a smaller Huffman tree and a shorter encoded form.
         // Equals to:
@@ -132,19 +158,7 @@ export default class Codifier {
         //     differential[i] = originalValueBuffer[i + 1] - originalValueBuffer[i];
         // }
         // ```
-        const differential = diff(originalValueBuffer);
-
-        // Finally, convert the differential into bytes.
-        let differentialInBytes: number[] = [];
-        for (const v of differential) {
-            let v2 = v;
-            for (let j = 0; j < byteDepth; ++j) {
-                differentialInBytes.push(v2 & 0xff);
-                v2 >>>= 8;
-            }
-        }
-
-        this._data = differentialInBytes;
+        this._differentialData = diff(originalValueBuffer);
     }
 
     /**
@@ -170,18 +184,17 @@ export default class Codifier {
 
     private __compressAudio(): void {
         // This `data` is already differentiated.
-        const data = this.data;
+        const data = this.differentialData;
         const format = this.format;
 
         // Build the Huffman tree.
         const hist = histogram(data);
-        //console.log(hist.slice(255 - 10, 255 + 10));
         const huffTree = this._huffmanTree = new HuffTree(hist);
         const encoder = huffTree.getEncoder();
         const encodedBitArray = encoder.encode(data);
 
         // Show info.
-        const originalBits = data.length * 8, encodedBits = encodedBitArray.length;
+        const originalBits = data.length * format.bitDepth, encodedBits = encodedBitArray.length;
         const compressionRatio = ((encodedBits / originalBits * 10000) | 0) / 10000;
         const compressionInfo = `Original bits: ${originalBits} [${round(originalBits / 8, 2)} byte(s)]\n`
             + `Encoded bits: ${encodedBits} [${round(encodedBits / 8, 2)} byte(s)]\n`
@@ -225,6 +238,7 @@ extern uint_fast8_t const SoundData[];
     }
 
     private _data: number[] = null;
+    private _differentialData: number[] = null;
     private _format: WavFormat = null;
     private _reader: Reader = null;
     private _cppSource: string = null;

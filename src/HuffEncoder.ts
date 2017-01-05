@@ -58,6 +58,10 @@ export default class HuffEncoder {
         return this.encode(data).data;
     }
 
+    get dictionary(): Map<number, HuffEntry> {
+        return this._dictionary;
+    }
+
     private _dictionary: Map<number, HuffEntry> = null;
 
 }

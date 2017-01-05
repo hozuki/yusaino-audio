@@ -12,11 +12,11 @@ used iterator pattern in his original code, and I tried to keep those by writing
 In the final JavaScript code, you can see a huge likelihood with the original code. For example:
 
 ```python
-dsound8 = map(int,chain((sound8[0],),imap(lambda x: x[1]-x[0],izip(sound8[:-1],sound8[1:]))))
+map(int,chain((sound8[0],),imap(lambda x: x[1]-x[0],izip(sound8[:-1],sound8[1:]))))
 ```
 
 ```javascript
-const sint8Audio = Array.from(chain([audio[0]], imap(x => x[1] - x[0], izip(select(audio, [, -1]), select(audio, [1,])))));
+Array.from(chain([sound[0]], imap(x => x[1] - x[0], izip(sound.pySlice([, -1]), sound.pySlice([1,])))));
 ```
 
 Yeah, I wrote `chain`, `imap`, `izip`, `select`, and `slice` myself. It's a good practice.
@@ -49,14 +49,20 @@ Options:
 
     -h, --help         output usage information
     -V, --version      output the version number
-    -b, --bits <bits>  Bit resolution (not implemented)
     -o, --cpp <file>   C/C++ program source code output
 
 The script needs a wave audio file, with these attributes:
 
-- bit depth: 8
+- bit depth: 8/16
 - channels: 1 (mono)
-- signed: no (unsigned)
+
+Example:
+
+```bash
+pwd # /mnt/d/source/yusaino-audio
+node . -o test /mnt/c/some-wav.wav
+ls # test.h test.ino
+```
 
 ## Naming
 

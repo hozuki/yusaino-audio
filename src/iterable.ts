@@ -1,5 +1,10 @@
 import Slice from "./Slice";
 
+export interface PySliceable<T> {
+    pySlice(slice: Slice): Iterable<T>;
+    pySlice(slice: number[]): Iterable<T>;
+}
+
 function xrange1(stop: number): Iterable<number> {
     return xrange2(0, stop, 1);
 }
@@ -155,3 +160,10 @@ export function slice(start?: any, stop?: any, step?: any): Slice {
         };
     }
 }
+
+function pySlice(s: any): Iterable<any> {
+    return select(this, slice(s));
+}
+
+// Make objects sliceable
+(<any>Object.prototype).pySlice = pySlice;

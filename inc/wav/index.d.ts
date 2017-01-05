@@ -26,7 +26,7 @@ declare module "wav" {
         new(): Writer;
     };
 
-    export interface FileWriter extends Writer {
+    interface FileWriter extends Writer {
     }
 
     const FileWriter: {
@@ -40,9 +40,6 @@ declare module "wav" {
         endianness?: Endianness;
     }
 
-    const enum Endianness {
-        "LE",
-        "BE"
-    }
+    type Endianness = "LE" | "BE";
 
 }

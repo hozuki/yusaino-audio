@@ -38,7 +38,7 @@ function main(): void {
 }
 
 function parseArgs(): Options {
-    const command = new commander.Command(pkg.name);
+    const command = new commander.Command("node " + pkg.name);
     command
         .version(pkg.version)
         .arguments("<wav-file>")

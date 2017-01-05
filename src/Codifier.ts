@@ -149,6 +149,13 @@ export default class Codifier {
             }
         }
 
+        // Convert unsigned to signed.
+        if (!format.signed) {
+            for (let i = 0; i < originalValueBuffer.length; ++i) {
+                originalValueBuffer[i] -= 16384;
+            }
+        }
+
         // Calculate the differential. Incremental encoding is a good idea, which narrows down the possible value range,
         // leading to a smaller Huffman tree and a shorter encoded form.
         // Equals to:
@@ -173,7 +180,7 @@ export default class Codifier {
         if (format.signed) {
             dataForDiff = [];
             for (const v of this.data) {
-                dataForDiff.push(unsignedToSigned(v, 8));
+                dataForDiff.push(v - 127);
             }
         } else {
             dataForDiff = this.data;

@@ -38,7 +38,6 @@ function parseArgs(): Options {
         .option("-o, --cpp <file>", "C/C++ program source code output")
         .parse(process.argv);
     return {
-        bits: Number.parseInt((<any>command)["bits"]),
         cpp: (<any>command)["cpp"] ? String((<any>command)["cpp"]) : void(0),
         wav: command.args[0],
     };

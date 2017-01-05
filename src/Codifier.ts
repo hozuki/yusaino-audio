@@ -208,7 +208,7 @@ extern uint_fast8_t const SoundData[];
         let cppSource = "";
         cppSource += `const uint_fast32_t SampleRate = ${format.sampleRate};\n`;
         cppSource += `const int_fast8_t SampleBits = ${format.bitDepth};\n`;
-        cppSource += `const boolean SampleSigned = ${format.signed};\n\n;`;
+        cppSource += `const boolean SampleSigned = ${format.signed};\n\n`;
         cppSource += `const int_fast16_t HuffDict[${decoder.length}] PROGMEM = {\n${arrayFormatter(decoder.dictionary)}\n};\n\n`;
         cppSource += `const uint_fast32_t SoundDataBits = ${encodedBitArray.length};\n`;
         cppSource += `const uint8_t SoundData[${encodedBitArray.data.length}] PROGMEM = {\n${arrayFormatter(encodedBitArray.data)}\n};\n`;
